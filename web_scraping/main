@@ -1,0 +1,46 @@
+# import libraries
+import requests, openpyxl
+from bs4 import BeautifulSoup
+
+
+#creat the excel
+excel = openpyxl.Workbook()
+sheet = excel.active
+#changing sheet's name
+sheet.title = 'Best Movies Of All Time'
+print(excel.sheetnames)
+#creating headers
+sheet.append(['Movie name', 'Movie rank', 'Year of release','Duration', 'Rating'])
+
+
+
+URL = 'https://www.imdb.com/chart/top/'
+
+headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'}
+
+
+page = requests.get(URL, headers=headers)
+soup = BeautifulSoup(page.text,'html.parser')
+
+
+    
+movies = soup.find('ul',class_="ipc-metadata-list ipc-metadata-list--dividers-between sc-3a353071-0 wTPeg compact-list-view ipc-metadata-list--base").find_all('li')
+
+for movie in movies:
+    # extracting movie's details
+    name = movie.find('h3',class_="ipc-title__text").get_text(strip=True).split('.')[1]
+    rank = movie.find('h3',class_="ipc-title__text").get_text(strip=True).split('.')[0]
+    rating = movie.find('span',class_="ipc-rating-star ipc-rating-star--base ipc-rating-star--imdb ratingGroup--imdb-rating").get_text()
+    content = soup.find_all(class_="sc-14dd939d-6 kHVqMR cli-title-metadata-item")
+    year = content[0].get_text()
+    duration = content[1].get_text()
+    
+    print(name, rank, year, duration, rating)
+    
+    
+    #importing to the excel file
+    sheet.append([name, rank, year, duration, rating])
+
+excel.save('IMDB Movie Rating.xlsx')
+
+    
